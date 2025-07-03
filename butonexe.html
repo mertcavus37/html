@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kaçan Buton</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      background: #111;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    #button {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 15px 30px;
+      font-size: 18px;
+      background-color: #e91e63;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: top 0.1s, left 0.1s;
+      box-shadow: 0 0 15px rgba(233, 30, 99, 0.7);
+      user-select: none;
+      outline: none;
+    }
+
+    #uyari {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #ff1744;
+      font-size: 28px;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.85);
+      padding: 15px 40px;
+      border-radius: 15px;
+      box-shadow: 0 0 25px #ff1744;
+      display: none;
+      animation: pulse 1s infinite alternate;
+      z-index: 9999;
+      user-select: none;
+      pointer-events: none;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    @keyframes pulse {
+      0% {
+        text-shadow: 0 0 10px #ff1744, 0 0 20px #ff1744;
+        transform: translateX(-50%) scale(1);
+      }
+      100% {
+        text-shadow: 0 0 25px #ff1744, 0 0 40px #ff1744;
+        transform: translateX(-50%) scale(1.1);
+      }
+    }
+  </style>
+</head>
+<body>
+  <button id="button" tabindex="-1" onfocus="this.blur()"> Kayıt olmak için tıklanıyız.</button>
+  <div id="uyari"></div>
+
+  <script>
+    const button = document.getElementById('button');
+    const uyari = document.getElementById('uyari');
+    const dangerZone = 150;
+    const speedMultiplier = 1.5;
+
+    function getRandomPosition(width, height) {
+      const maxX = window.innerWidth - width;
+      const maxY = window.innerHeight - height;
+      return {
+        x: Math.floor(Math.random() * maxX),
+        y: Math.floor(Math.random() * maxY)
+      };
+    }
+
+    document.addEventListener('mousemove', function (e) {
+      const rect = button.getBoundingClientRect();
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
+
+      const btnCenterX = rect.left + rect.width / 2;
+      const btnCenterY = rect.top + rect.height / 2;
+
+      const dx = mouseX - btnCenterX;
+      const dy = mouseY - btnCenterY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < dangerZone) {
+        const angle = Math.atan2(dy, dx);
+        const moveX = -Math.cos(angle) * dangerZone * speedMultiplier;
+        const moveY = -Math.sin(angle) * dangerZone * speedMultiplier;
+
+        let newLeft = rect.left + moveX;
+        let newTop = rect.top + moveY;
+
+        const maxLeft = window.innerWidth - rect.width;
+        const maxTop = window.innerHeight - rect.height;
+
+        if (newLeft < 0 || newLeft > maxLeft || newTop < 0 || newTop > maxTop) {
+          const randomPos = getRandomPosition(rect.width, rect.height);
+          newLeft = randomPos.x;
+          newTop = randomPos.y;
+        }
+
+        button.style.left = `${newLeft}px`;
+        button.style.top = `${newTop}px`;
+      }
+    });
+
+    button.addEventListener('click', function () {
+      uyari.innerText = "Bravo , tıkladınız. 👏 Fakat daha kayıt olamazsız. ";
+      uyari.style.display = "block";
+      setTimeout(() => {
+        uyari.style.display = "none";
+      }, 3000);
+    });
+
+    button.addEventListener('focus', e => {
+      e.target.blur();
+    });
+
+    document.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+      uyari.innerText = "Sağ tık mı?  Yemezler.";
+      uyari.style.display = "block";
+      setTimeout(() => {
+        uyari.style.display = "none";
+      }, 3000);
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J")) ||
+        (e.ctrlKey && e.key === "U")
+      ) {
+        e.preventDefault();
+        uyari.innerText = "Kodlara mı bakıyorsun sen 😏";
+        uyari.style.display = "block";
+        setTimeout(() => {
+          uyari.style.display = "none";
+        }, 3000);
+      }
+    });
+  </script>
+</body>
+</html>
