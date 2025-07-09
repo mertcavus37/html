@@ -1,6 +1,23 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+      <meta charset="UTF-8">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+
+    body {
+      background-image: url('web sitesi/alev.png'); /* İlk (az alevli) görsel */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      transition: background-image 1s ease-in-out;
+      cursor: pointer;
+    }
+  </style>
     
     <title>Türkiye'nin Uçakları</title>
 <style>
@@ -32,6 +49,31 @@
 </style>
 </head>
 <body>
+<script>
+  let changed = false;
+
+  function changeBackground() {
+    if (!changed) {
+      document.body.style.backgroundImage = "url('web sitesi/ateş 2.avif')";
+    } else {
+      document.body.style.backgroundImage = "url('web sitesi/alev.png')";
+    }
+    changed = !changed; // Durumu tersine çevir
+  }
+</script>
+    
+<script>
+  let changed = false;
+
+  function changeBackground() {
+    if (!changed) {
+      document.body.style.backgroundImage = "url('web sitesi/ateş 2.avif')";
+    } else {
+      document.body.style.backgroundImage = "url('web sitesi/alev.png')";
+    }
+    changed = !changed; // Durumu tersine çevir
+  }
+</script>
     <br><br><br>
     <a href="uçakmenusu.html" class="renk_mavi">UÇAK MENÜSÜ</a>
     <br><br><br>

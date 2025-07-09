@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Kaçan Buton</title>
+  <title>Buton</title>
   <style>
     body {
       margin: 0;
@@ -28,6 +28,7 @@
       box-shadow: 0 0 15px rgba(233, 30, 99, 0.7);
       user-select: none;
       outline: none;
+      z-index: 10;
     }
 
     #uyari {
@@ -64,22 +65,64 @@
   </style>
 </head>
 <body>
-  <button id="button" tabindex="-1" onfocus="this.blur()"> Kayıt olmak için tıklanıyız.</button>
+  <button id="button" tabindex="-1" onfocus="this.blur()">Kayıt olmak için tıklayınız.</button>
   <div id="uyari"></div>
 
   <script>
+    setInterval(() => {
+  const start = performance.now();
+  debugger; // DevTools açıksa burada durur, süre uzar
+  const end = performance.now();
+  if (end - start > 100) {
+    alert('DevTools açık! Sayfa korunuyor.');
+    window.location.reload(); // veya başka bir işlem
+  }
+}, 1000);
+
+    function openFullscreen() {
+  const elem = document.documentElement;
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.mozRequestFullScreen) { /* Firefox */
+    elem.mozRequestFullScreen();
+  } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+    elem.webkitRequestFullscreen();
+  } else if (elem.msRequestFullscreen) { /* IE/Edge */
+    elem.msRequestFullscreen();
+  }
+}
+// Örnek: sayfa yüklendiğinde tam ekran iste
+window.onload = () => {
+  openFullscreen();
+}
+
     const button = document.getElementById('button');
     const uyari = document.getElementById('uyari');
     const dangerZone = 150;
     const speedMultiplier = 1.5;
+    const minMargin = 20; // Buton ekran kenarından en az 20px içeride olmalı
+    const minWidth = 400;  // Minimum pencere genişliği uyarı için
+    const minHeight = 300; // Minimum pencere yüksekliği uyarı için
 
     function getRandomPosition(width, height) {
-      const maxX = window.innerWidth - width;
-      const maxY = window.innerHeight - height;
+      const maxX = window.innerWidth - width - minMargin;
+      const maxY = window.innerHeight - height - minMargin;
       return {
-        x: Math.floor(Math.random() * maxX),
-        y: Math.floor(Math.random() * maxY)
+        x: Math.floor(Math.random() * (maxX - minMargin)) + minMargin,
+        y: Math.floor(Math.random() * (maxY - minMargin)) + minMargin
       };
+    }
+
+    function checkWindowSize() {
+      if (window.innerWidth < minWidth || window.innerHeight < minHeight) {
+        uyari.innerText = `Pencere çok küçük! En az ${minWidth}x${minHeight} kullan.`;
+        uyari.style.display = "block";
+      } else {
+        if (uyari.innerText.startsWith("Pencere çok küçük")) {
+          uyari.style.display = "none";
+          uyari.innerText = "";
+        }
+      }
     }
 
     document.addEventListener('mousemove', function (e) {
@@ -102,10 +145,15 @@
         let newLeft = rect.left + moveX;
         let newTop = rect.top + moveY;
 
-        const maxLeft = window.innerWidth - rect.width;
-        const maxTop = window.innerHeight - rect.height;
+        const maxLeft = window.innerWidth - rect.width - minMargin;
+        const maxTop = window.innerHeight - rect.height - minMargin;
 
-        if (newLeft < 0 || newLeft > maxLeft || newTop < 0 || newTop > maxTop) {
+        // Buton ekran dışına çıkmasın, minMargin ile içeride kalsın
+        newLeft = Math.min(Math.max(newLeft, minMargin), maxLeft);
+        newTop = Math.min(Math.max(newTop, minMargin), maxTop);
+
+        // Eğer dışarı çıkıyorsa rastgele pozisyona ışınla
+        if (newLeft <= minMargin || newLeft >= maxLeft || newTop <= minMargin || newTop >= maxTop) {
           const randomPos = getRandomPosition(rect.width, rect.height);
           newLeft = randomPos.x;
           newTop = randomPos.y;
@@ -117,10 +165,11 @@
     });
 
     button.addEventListener('click', function () {
-      uyari.innerText = "Bravo , tıkladınız. 👏 Fakat daha kayıt olamazsız. ";
+      uyari.innerText = "Bravo tıkladınız. fakat kayıt olamazsınız.";
       uyari.style.display = "block";
       setTimeout(() => {
         uyari.style.display = "none";
+        uyari.innerText = "";
       }, 3000);
     });
 
@@ -134,6 +183,7 @@
       uyari.style.display = "block";
       setTimeout(() => {
         uyari.style.display = "none";
+        uyari.innerText = "";
       }, 3000);
     });
 
@@ -148,9 +198,14 @@
         uyari.style.display = "block";
         setTimeout(() => {
           uyari.style.display = "none";
+          uyari.innerText = "";
         }, 3000);
       }
     });
+
+    window.addEventListener('resize', checkWindowSize);
+    window.addEventListener('load', checkWindowSize);
   </script>
 </body>
 </html>
+
