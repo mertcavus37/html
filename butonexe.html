@@ -62,47 +62,38 @@
         transform: translateX(-50%) scale(1.1);
       }
     }
+
+    #stopButton {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #444;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      z-index: 10000;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
   </style>
 </head>
 <body>
   <button id="button" tabindex="-1" onfocus="this.blur()">Kayıt olmak için tıklayınız.</button>
+  <button id="stopButton">Durdur</button>
   <div id="uyari"></div>
 
   <script>
-    setInterval(() => {
-  const start = performance.now();
-  debugger; // DevTools açıksa burada durur, süre uzar
-  const end = performance.now();
-  if (end - start > 100) {
-    alert('DevTools açık! Sayfa korunuyor.');
-    window.location.reload(); // veya başka bir işlem
-  }
-}, 1000);
-
-    function openFullscreen() {
-  const elem = document.documentElement;
-  if (elem.requestFullscreen) {
-    elem.requestFullscreen();
-  } else if (elem.mozRequestFullScreen) { /* Firefox */
-    elem.mozRequestFullScreen();
-  } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
-    elem.webkitRequestFullscreen();
-  } else if (elem.msRequestFullscreen) { /* IE/Edge */
-    elem.msRequestFullscreen();
-  }
-}
-// Örnek: sayfa yüklendiğinde tam ekran iste
-window.onload = () => {
-  openFullscreen();
-}
-
     const button = document.getElementById('button');
     const uyari = document.getElementById('uyari');
+    const stopButton = document.getElementById('stopButton');
     const dangerZone = 150;
     const speedMultiplier = 1.5;
-    const minMargin = 20; // Buton ekran kenarından en az 20px içeride olmalı
-    const minWidth = 400;  // Minimum pencere genişliği uyarı için
-    const minHeight = 300; // Minimum pencere yüksekliği uyarı için
+    const minMargin = 20;
+    const minWidth = 400;
+    const minHeight = 300;
+    let durduruldu = false;
 
     function getRandomPosition(width, height) {
       const maxX = window.innerWidth - width - minMargin;
@@ -114,6 +105,7 @@ window.onload = () => {
     }
 
     function checkWindowSize() {
+      if (durduruldu) return;
       if (window.innerWidth < minWidth || window.innerHeight < minHeight) {
         uyari.innerText = `Pencere çok küçük! En az ${minWidth}x${minHeight} kullan.`;
         uyari.style.display = "block";
@@ -125,7 +117,8 @@ window.onload = () => {
       }
     }
 
-    document.addEventListener('mousemove', function (e) {
+    function hareketKontrol(e) {
+      if (durduruldu) return;
       const rect = button.getBoundingClientRect();
       const mouseX = e.clientX;
       const mouseY = e.clientY;
@@ -148,11 +141,9 @@ window.onload = () => {
         const maxLeft = window.innerWidth - rect.width - minMargin;
         const maxTop = window.innerHeight - rect.height - minMargin;
 
-        // Buton ekran dışına çıkmasın, minMargin ile içeride kalsın
         newLeft = Math.min(Math.max(newLeft, minMargin), maxLeft);
         newTop = Math.min(Math.max(newTop, minMargin), maxTop);
 
-        // Eğer dışarı çıkıyorsa rastgele pozisyona ışınla
         if (newLeft <= minMargin || newLeft >= maxLeft || newTop <= minMargin || newTop >= maxTop) {
           const randomPos = getRandomPosition(rect.width, rect.height);
           newLeft = randomPos.x;
@@ -162,9 +153,12 @@ window.onload = () => {
         button.style.left = `${newLeft}px`;
         button.style.top = `${newTop}px`;
       }
-    });
+    }
+
+    document.addEventListener('mousemove', hareketKontrol);
 
     button.addEventListener('click', function () {
+      if (durduruldu) return;
       uyari.innerText = "Bravo tıkladınız. fakat kayıt olamazsınız.";
       uyari.style.display = "block";
       setTimeout(() => {
@@ -178,6 +172,7 @@ window.onload = () => {
     });
 
     document.addEventListener('contextmenu', function (e) {
+      if (durduruldu) return;
       e.preventDefault();
       uyari.innerText = "Sağ tık mı?  Yemezler.";
       uyari.style.display = "block";
@@ -188,6 +183,7 @@ window.onload = () => {
     });
 
     document.addEventListener('keydown', function(e) {
+      if (durduruldu) return;
       if (
         e.key === "F12" ||
         (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J")) ||
@@ -203,9 +199,41 @@ window.onload = () => {
       }
     });
 
+    setInterval(() => {
+      if (durduruldu) return;
+      const start = performance.now();
+      debugger;
+      const end = performance.now();
+      if (end - start > 100) {
+        alert('DevTools açık! Sayfa korunuyor.');
+        window.location.reload();
+      }
+    }, 1000);
+
     window.addEventListener('resize', checkWindowSize);
-    window.addEventListener('load', checkWindowSize);
+    window.addEventListener('load', () => {
+      openFullscreen();
+      checkWindowSize();
+    });
+
+    function openFullscreen() {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.mozRequestFullScreen) {
+        elem.mozRequestFullScreen();
+      } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+      }
+    }
+
+    stopButton.addEventListener("click", () => {
+      durduruldu = true;
+      uyari.innerText = "Buton donduruldu. Artık kaçamayacak.";
+      uyari.style.display = "block";
+    });
   </script>
 </body>
 </html>
-
